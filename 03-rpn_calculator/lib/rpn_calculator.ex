@@ -1,5 +1,6 @@
 defmodule RPNCalc do
   use GenServer
+
   @moduledoc """
   Documentation for RPNCalc.
   """
@@ -26,6 +27,7 @@ defmodule RPNCalc do
 
   @doc """
   Push an integer or operation (:+, :-, :x, :/) onto the stack.
+  Non-implemented operations or any other values will be ignored.
 
   ## Examples
 
@@ -51,18 +53,29 @@ defmodule RPNCalc do
     {:reply, stack, stack}
   end
 
-  def handle_cast({:push, val}, [a, b | remainder] = stack) do
-    case val do
-      :+ -> {:noreply, [b + a | remainder]}
+  # Pushing an atom when there are at least 2 values on the stack
+  def handle_cast({:push, op}, [a, b | remainder] = stack) when is_atom(op) do
+    case op do
+      :+ ->
+        {:noreply, [b + a | remainder]}
 
-      :- -> {:noreply, [b - a | remainder]}
+      :- ->
+        {:noreply, [b - a | remainder]}
 
-      :x -> {:noreply, [b * a | remainder]}
+      :x ->
+        {:noreply, [b * a | remainder]}
 
-      :/ -> {:noreply, [b / a | remainder]}
+      :/ ->
+        {:noreply, [b / a | remainder]}
 
-      _ -> {:noreply, [val | stack]}
+      # Don't respond to non-implemented operations
+      _ ->
+        {:noreply, stack}
     end
   end
+
+  # Pushing an integer
   def handle_cast({:push, val}, stack) when is_integer(val), do: {:noreply, [val | stack]}
+  # Pushing anything else
+  def handle_cast({:push, _}, stack), do: {:noreply, stack}
 end
