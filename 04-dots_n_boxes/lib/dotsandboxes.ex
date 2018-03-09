@@ -24,6 +24,13 @@ defmodule DnB do
   end
 
   @doc """
+  Make a play
+  """
+  def play_move(game_pid, line) do
+    GenServer.call(game_pid, {:play, line})
+  end
+
+  @doc """
   Start a new game of Dots and Boxes
   """
   def quit_game(game_pid) do
