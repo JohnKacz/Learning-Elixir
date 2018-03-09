@@ -3,25 +3,33 @@ defmodule DnB.GameTest do
   doctest DnB.Game
 
   setup_all do
-    game = DnB.Game.new_game(3)
-
-    {:ok, game: game}
+    {:ok,
+     game: DnB.Game.new_game(3),
+     valid_moves: [{0, 0, :x}, {0, 0, :y}],
+     invalid_moves: [{-1, 0, :x}, {0, 5, :x}, {1, 1, :z}]}
   end
 
   test "playing a move should move the line from open_lines to the current player's lines", %{
-    game: game
+    game: game,
+    valid_moves: [valid_move | _]
   } do
-    line = {0, 0, :x}
-
     {:ok, %{board: %{open_lines: open_lines, player1_lines: player1_lines}}} =
-      DnB.Game.play(game, line)
+      DnB.Game.play(game, valid_move)
 
-    refute MapSet.member?(open_lines, line)
-    assert MapSet.member?(player1_lines, line)
+    refute MapSet.member?(open_lines, valid_move)
+    assert MapSet.member?(player1_lines, valid_move)
   end
 
-  @tag :pending
-  test "playing a move should make change the current player to the next player"
+  test "playing a move should make change the current player to the next player", %{
+    game: game = %{current_player: current_player},
+    valid_moves: valid_moves
+  } do
+    assert current_player == :p1
+    {:ok, game = %{current_player: current_player}} = DnB.Game.play(game, Enum.at(valid_moves, 0))
+    assert current_player == :p2
+    {:ok, %{current_player: current_player}} = DnB.Game.play(game, Enum.at(valid_moves, 1))
+    assert current_player == :p1
+  end
 
   @tag :pending
   test "playing an invalid move should return an error and leave the game unchanged."
