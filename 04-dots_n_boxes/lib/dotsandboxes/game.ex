@@ -10,14 +10,25 @@ defmodule DnB.Game do
   end
 
   def play(game, line) do
-    game = %Game{
-      board: %Board{
-        game.board
-        | open_lines: MapSet.delete(game.board.open_lines, line),
-          player1_lines: MapSet.put(game.board.player1_lines, line)
-      },
-      current_player: next_player(game.current_player)
-    }
+    # Validate the line
+    case MapSet.member?(game.board.open_lines, line) do
+      # Play the line
+      true ->
+        game = %Game{
+          board: %Board{
+            game.board
+            | open_lines: MapSet.delete(game.board.open_lines, line),
+              player1_lines: MapSet.put(game.board.player1_lines, line)
+          },
+          current_player: next_player(game.current_player)
+        }
+
+        {:ok, game}
+
+      # Return an error
+      false ->
+        {:error, "Invalid Move", game}
+    end
 
     # Another implementation for learning purposes
     # game =
@@ -31,8 +42,10 @@ defmodule DnB.Game do
     #     MapSet.put(game.board.player1_lines, line)
     #   )
     #   |> put_in([Access.key(:current_player)], next_player(game.current_player))
+  end
 
-    {:ok, game}
+  def validate_line({x, y, ord}, size) do
+    {x, y, ord}
   end
 
   defp next_player(current_player) do

@@ -31,8 +31,17 @@ defmodule DnB.GameTest do
     assert current_player == :p1
   end
 
-  @tag :pending
-  test "playing an invalid move should return an error and leave the game unchanged."
+  test "playing an invalid move should return an error and leave the game unchanged.", %{
+    game: game,
+    invalid_moves: invalid_moves
+  } do
+    {:error, _reason, new_game} = DnB.Game.play(game, Enum.at(invalid_moves, 0))
+    assert new_game == game
+    {:error, _reason, new_game} = DnB.Game.play(game, Enum.at(invalid_moves, 1))
+    assert new_game == game
+    {:error, _reason, new_game} = DnB.Game.play(game, Enum.at(invalid_moves, 2))
+    assert new_game == game
+  end
 
   @tag :pending
   test "playing a move that has already been played should return an error and leave the game unchanged."
