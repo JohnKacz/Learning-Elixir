@@ -43,8 +43,16 @@ defmodule DnB.GameTest do
     assert new_game == game
   end
 
-  @tag :pending
-  test "playing a move that has already been played should return an error and leave the game unchanged."
+  test "playing a move that has already been played should return an error and leave the game unchanged.",
+       %{
+         game: game,
+         valid_moves: [valid_move | _]
+       } do
+    {:ok, game} = DnB.Game.play(game, valid_move)
+    {:error, _reason, unchanged_game} = DnB.Game.play(game, valid_move)
+
+    assert unchanged_game == game
+  end
 
   @tag :pending
   test "playing a move that completes a box should move the completed box from open_boxes to the current player's boxes."
