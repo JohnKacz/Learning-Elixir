@@ -11,9 +11,9 @@ defmodule DnB.Game do
 
   def play(game, line) do
     # Validate the line
-    case MapSet.member?(game.board.open_lines, line) do
+    case {MapSet.member?(game.board.open_lines, line), game.current_player} do
       # Play the line
-      true ->
+      {true, :p1} ->
         game = %Game{
           board: %Board{
             game.board
@@ -25,8 +25,24 @@ defmodule DnB.Game do
 
         {:ok, game}
 
+      # Play the line
+      {true, :p2} ->
+        game = %Game{
+          board: %Board{
+            game.board
+            | open_lines: MapSet.delete(game.board.open_lines, line),
+              player2_lines: MapSet.put(game.board.player2_lines, line)
+          },
+          current_player: next_player(game.current_player)
+        }
+
+        {:ok, game}
+
+      {true, _} ->
+        {:ok, game}
+
       # Return an error
-      false ->
+      {false, _} ->
         {:error, "Invalid Move", game}
     end
 

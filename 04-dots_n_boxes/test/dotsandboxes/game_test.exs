@@ -11,16 +11,23 @@ defmodule DnB.GameTest do
 
   test "playing a move should move the line from open_lines to the current player's lines", %{
     game: game,
-    valid_moves: [valid_move | _]
+    valid_moves: valid_moves
   } do
-    {:ok, %{board: %{open_lines: open_lines, player1_lines: player1_lines}}} =
-      DnB.Game.play(game, valid_move)
+    {_,
+     %{
+       board: %{
+         open_lines: open_lines,
+         player1_lines: player1_lines,
+         player2_lines: player2_lines
+       }
+     }} = Enum.map_reduce(valid_moves, game, fn move, game -> DnB.Game.play(game, move) end)
 
-    refute MapSet.member?(open_lines, valid_move)
-    assert MapSet.member?(player1_lines, valid_move)
+    assert MapSet.disjoint?(open_lines, MapSet.new(valid_moves))
+    assert MapSet.member?(player1_lines, Enum.at(valid_moves, 0))
+    assert MapSet.member?(player2_lines, Enum.at(valid_moves, 1))
   end
 
-  test "playing a move should make change the current player to the next player", %{
+  test "playing a move should change the current player to the next player", %{
     game: game = %{current_player: current_player},
     valid_moves: valid_moves
   } do
@@ -56,6 +63,9 @@ defmodule DnB.GameTest do
 
   @tag :pending
   test "playing a move that completes a box should move the completed box from open_boxes to the current player's boxes."
+
+  @tag :pending
+  test "playing a move that completes two boxes should move the both boxes from open_boxes to the current player's boxes."
 
   @tag :pending
   test "playing a move that completes a box should keep the current player the same."
