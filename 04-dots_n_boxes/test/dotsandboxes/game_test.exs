@@ -38,8 +38,8 @@ defmodule DnB.GameTest do
      }} = Enum.map_reduce(valid_moves, game, fn move, game -> DnB.Game.play(game, move) end)
 
     assert MapSet.disjoint?(open_lines, MapSet.new(valid_moves))
-    assert MapSet.member?(player1_lines, Enum.at(valid_moves, 0))
-    assert MapSet.member?(player2_lines, Enum.at(valid_moves, 1))
+    assert MapSet.equal?(player1_lines, MapSet.new(Enum.take(valid_moves, 1)))
+    assert MapSet.equal?(player2_lines, MapSet.new(Enum.take(valid_moves, -1)))
   end
 
   test "playing a move should change the current player to the next player", %{
@@ -100,7 +100,7 @@ defmodule DnB.GameTest do
 
   test "playing a move that completes a box should keep the current player the same.", %{
     game: game,
-    single_box: {box, moves}
+    single_box: {_box, moves}
   } do
     {_, %{current_player: current_player}} =
       Enum.map_reduce(moves, game, fn move, game -> DnB.Game.play(game, move) end)

@@ -10,12 +10,16 @@ defmodule DnB.Game do
   end
 
   def play(game, line) do
+    play(game, line, MapSet.member?(game.board.open_lines, line))
+  end
+
+  def play(game, line, _valid_line? = true) do
     # Find any boxes that should be completed
     boxes = new_completed_boxes(game.board, line)
-    # Validate the line
-    case {MapSet.member?(game.board.open_lines, line), game.current_player} do
+
+    case game.current_player do
       # Play the line for Player 1
-      {true, :p1} ->
+      :p1 ->
         game = %Game{
           board: %Board{
             game.board
@@ -30,7 +34,7 @@ defmodule DnB.Game do
         {:ok, game}
 
       # Play the line for Player 2
-      {true, :p2} ->
+      :p2 ->
         game = %Game{
           board: %Board{
             game.board
@@ -45,14 +49,12 @@ defmodule DnB.Game do
         {:ok, game}
 
       # Return an error
-      {true, _} ->
+      _ ->
         {:error, "Invalid Player", game}
-
-      # Return an error
-      {false, _} ->
-        {:error, "Invalid Move", game}
     end
   end
+
+  def play(game, _line, _valid_line? = false), do: {:error, "Invalid Move", game}
 
   defp new_completed_boxes(board, line = {x, y, o}) do
     box1 = {x, y}
