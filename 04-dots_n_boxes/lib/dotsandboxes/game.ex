@@ -24,7 +24,7 @@ defmodule DnB.Game do
               open_boxes: MapSet.difference(game.board.open_boxes, boxes),
               player1_boxes: MapSet.union(game.board.player1_boxes, boxes)
           },
-          current_player: next_player(game.current_player)
+          current_player: next_player(game.current_player, MapSet.size(boxes))
         }
 
         {:ok, game}
@@ -39,7 +39,7 @@ defmodule DnB.Game do
               open_boxes: MapSet.difference(game.board.open_boxes, boxes),
               player2_boxes: MapSet.union(game.board.player2_boxes, boxes)
           },
-          current_player: next_player(game.current_player)
+          current_player: next_player(game.current_player, MapSet.size(boxes))
         }
 
         {:ok, game}
@@ -73,10 +73,9 @@ defmodule DnB.Game do
 
   defp lines_for({x, y}), do: MapSet.new([{x, y, :x}, {x, y, :y}, {x + 1, y, :y}, {x, y + 1, :x}])
 
-  defp next_player(current_player) do
-    case current_player do
-      :p1 -> :p2
-      :p2 -> :p1
-    end
+  defp next_player(player, new_box_count) when new_box_count > 0, do: player
+
+  defp next_player(player, _) do
+    if player == :p1, do: :p2, else: :p1
   end
 end

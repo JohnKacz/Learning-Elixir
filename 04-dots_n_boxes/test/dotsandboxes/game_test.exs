@@ -98,6 +98,13 @@ defmodule DnB.GameTest do
     assert MapSet.equal?(game.board.player1_boxes, boxes)
   end
 
-  @tag :pending
-  test "playing a move that completes a box should keep the current player the same."
+  test "playing a move that completes a box should keep the current player the same.", %{
+    game: game,
+    single_box: {box, moves}
+  } do
+    {_, %{current_player: current_player}} =
+      Enum.map_reduce(moves, game, fn move, game -> DnB.Game.play(game, move) end)
+
+    assert current_player == :p2
+  end
 end
