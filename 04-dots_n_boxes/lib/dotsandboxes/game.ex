@@ -14,47 +14,34 @@ defmodule DnB.Game do
   end
 
   def play(game, line, _valid_line? = true) do
-    # Find any boxes that should be completed
     boxes = new_completed_boxes(game.board, line)
+    p1_lines = update_with_if(game.board.player1_lines, line, game.current_player == :p1)
+    p2_lines = update_with_if(game.board.player2_lines, line, game.current_player == :p2)
+    p1_boxes = update_with_if(game.board.player1_boxes, boxes, game.current_player == :p1)
+    p2_boxes = update_with_if(game.board.player2_boxes, boxes, game.current_player == :p2)
 
-    case game.current_player do
-      # Play the line for Player 1
-      :p1 ->
-        game = %Game{
-          board: %Board{
-            game.board
-            | open_lines: MapSet.delete(game.board.open_lines, line),
-              player1_lines: MapSet.put(game.board.player1_lines, line),
-              open_boxes: MapSet.difference(game.board.open_boxes, boxes),
-              player1_boxes: MapSet.union(game.board.player1_boxes, boxes)
-          },
-          current_player: next_player(game.current_player, MapSet.size(boxes))
-        }
-
-        {:ok, game}
-
-      # Play the line for Player 2
-      :p2 ->
-        game = %Game{
-          board: %Board{
-            game.board
-            | open_lines: MapSet.delete(game.board.open_lines, line),
-              player2_lines: MapSet.put(game.board.player2_lines, line),
-              open_boxes: MapSet.difference(game.board.open_boxes, boxes),
-              player2_boxes: MapSet.union(game.board.player2_boxes, boxes)
-          },
-          current_player: next_player(game.current_player, MapSet.size(boxes))
-        }
-
-        {:ok, game}
-
-      # Return an error
-      _ ->
-        {:error, "Invalid Player", game}
-    end
+    {
+      :ok,
+      %Game{
+        board: %Board{
+          game.board
+          | open_lines: MapSet.delete(game.board.open_lines, line),
+            player1_lines: p1_lines,
+            player2_lines: p2_lines,
+            open_boxes: MapSet.difference(game.board.open_boxes, boxes),
+            player1_boxes: p1_boxes,
+            player2_boxes: p2_boxes
+        },
+        current_player: next_player(game.current_player, MapSet.size(boxes))
+      }
+    }
   end
 
   def play(game, _line, _valid_line? = false), do: {:error, "Invalid Move", game}
+
+  defp update_with_if(set, line, true) when is_tuple(line), do: MapSet.put(set, line)
+  defp update_with_if(set, boxes, true), do: MapSet.union(set, boxes)
+  defp update_with_if(set, _, false), do: set
 
   defp new_completed_boxes(board, line = {x, y, o}) do
     box1 = {x, y}
