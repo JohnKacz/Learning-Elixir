@@ -3,10 +3,25 @@ defmodule DnB.GameTest do
   doctest DnB.Game
 
   setup_all do
-    {:ok,
-     game: DnB.Game.new_game(3),
-     valid_moves: [{0, 0, :x}, {0, 0, :y}],
-     invalid_moves: [{-1, 0, :x}, {0, 5, :x}, {1, 1, :z}]}
+    {
+      :ok,
+      game: DnB.Game.new_game(3),
+      valid_moves: [{0, 0, :x}, {0, 0, :y}],
+      invalid_moves: [{-1, 0, :x}, {0, 5, :x}, {1, 1, :z}],
+      single_box: {MapSet.new([{0, 0}]), [{0, 0, :y}, {0, 1, :x}, {1, 0, :y}, {0, 0, :x}]},
+      double_box: {
+        MapSet.new([{0, 0}, {0, 1}]),
+        [
+          {0, 0, :x},
+          {0, 0, :y},
+          {1, 0, :y},
+          {1, 1, :y},
+          {0, 1, :y},
+          {0, 2, :x},
+          {0, 1, :x}
+        ]
+      }
+    }
   end
 
   test "playing a move should move the line from open_lines to the current player's lines", %{
@@ -61,11 +76,27 @@ defmodule DnB.GameTest do
     assert unchanged_game == game
   end
 
-  @tag :pending
-  test "playing a move that completes a box should move the completed box from open_boxes to the current player's boxes."
+  test "playing a move that completes a box should move the completed box from open_boxes to the current player's boxes.",
+       %{
+         game: game,
+         single_box: {box, moves}
+       } do
+    {_, game} = Enum.map_reduce(moves, game, fn move, game -> DnB.Game.play(game, move) end)
 
-  @tag :pending
-  test "playing a move that completes two boxes should move the both boxes from open_boxes to the current player's boxes."
+    assert MapSet.disjoint?(game.board.open_boxes, box)
+    assert MapSet.equal?(game.board.player2_boxes, box)
+  end
+
+  test "playing a move that completes two boxes should move the both boxes from open_boxes to the current player's boxes.",
+       %{
+         game: game,
+         double_box: {boxes, moves}
+       } do
+    {_, game} = Enum.map_reduce(moves, game, fn move, game -> DnB.Game.play(game, move) end)
+
+    assert MapSet.disjoint?(game.board.open_boxes, boxes)
+    assert MapSet.equal?(game.board.player1_boxes, boxes)
+  end
 
   @tag :pending
   test "playing a move that completes a box should keep the current player the same."
