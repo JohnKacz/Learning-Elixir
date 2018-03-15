@@ -17,7 +17,14 @@ defmodule DnB.Game.Board do
     %Board{open_lines: lines(size), open_boxes: boxes(size), grid_size: size}
   end
 
-  def print(board = %{grid_size: size}) do
+  def print(board = %{player1_boxes: p1b, player2_boxes: p2b, grid_size: size}) do
+    # Print score
+    IO.puts("+--------------+\n|    Score     |")
+    IO.puts("| Player 1: #{MapSet.size(p1b) |> Integer.to_string() |> String.pad_leading(2)} |")
+    IO.puts("| Player 2: #{MapSet.size(p2b) |> Integer.to_string() |> String.pad_leading(2)} |")
+    IO.puts("+--------------+")
+
+    # Print the board
     for row <- 0..(size - 1) do
       print_h(board, row, size)
       print_v(board, row, size)
