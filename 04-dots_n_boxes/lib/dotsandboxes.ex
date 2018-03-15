@@ -31,6 +31,13 @@ defmodule DnB do
   end
 
   @doc """
+  Automatically play a given number of moves.
+  """
+  def auto_play(game_pid, number_of_moves) do
+    GenServer.call(game_pid, {:auto, number_of_moves})
+  end
+
+  @doc """
   Start a new game of Dots and Boxes
   """
   def quit_game(game_pid) do

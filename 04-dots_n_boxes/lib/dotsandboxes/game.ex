@@ -9,6 +9,18 @@ defmodule DnB.Game do
     %Game{board: Board.new_board(size)}
   end
 
+  def auto_play(game, 1), do: play_random(game)
+
+  def auto_play(game, times) when times > 1 do
+    game =
+      case play_random(game) do
+        {:ok, game} -> game
+        {:error, _reason, game} -> game
+      end
+
+    auto_play(game, times - 1)
+  end
+
   def play(game, line) do
     play(game, line, MapSet.member?(game.board.open_lines, line))
   end
@@ -39,6 +51,15 @@ defmodule DnB.Game do
 
   def play(game, _line, _valid_line? = false), do: {:error, "Invalid Move", game}
 
+  def play_random(game) do
+    cond do
+      MapSet.size(game.board.open_lines) > 0 -> play(game, random_line(game))
+      true -> {:error, "Game is Finished", game}
+    end
+  end
+
+  #############################################################################################
+
   defp update_with_if(set, line, true) when is_tuple(line), do: MapSet.put(set, line)
   defp update_with_if(set, boxes, true), do: MapSet.union(set, boxes)
   defp update_with_if(set, _, false), do: set
@@ -67,4 +88,6 @@ defmodule DnB.Game do
   defp next_player(player, _) do
     if player == :p1, do: :p2, else: :p1
   end
+
+  defp random_line(game), do: Enum.random(game.board.open_lines)
 end
